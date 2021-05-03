@@ -11,5 +11,5 @@ Program to handle BlueTooth connection with a PS3 controller. The controller con
     - PC1: TX - data to console.
     - PC11: RX - data from console.
 
-## Functionality
+## Results
 We were not able to establish a clear connection to the USB adapter board. The USB Host Shield was designed for Arduino's in mind, so it was not intuitive for the Discover board. Additionally, we did not know how to begin pairing for the Bluetooth adapter and the PS3 controller. We were able to get the individual MAC addresses, but could not pair them. Even if the controller was plugged straight into the USB board, no data was transferred to the Discovery board.
