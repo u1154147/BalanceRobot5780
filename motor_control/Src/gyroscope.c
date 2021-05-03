@@ -1,6 +1,7 @@
+/*
+ * Performs I2C related code. Contains initialization code to establish communication, and read functions for any of the axes of the L3GD20 gyroscope, X, Y, or Z.
+*/
 #include "gyroscope.h"
-
-#include "main.h"
 #include "stm32f0xx_hal.h"
 
 /* USER CODE BEGIN Includes */
@@ -30,45 +31,32 @@ short threshold = 5000;
 short read_x()
 {
 	perform_write(0x6B, 0xA8);
-	
 	short x = perform_read(0x6B);
-	
-//	if (x > threshold)
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); // Green LED ON
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET); // Orange LED OFF
-//	}
-//	
-//	else if (x < -threshold)
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Orange LED ON
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET); // Green LED OFF
-//	}
 	
 	return x;
 	
 }
 
-//void read_y()
-//{
-//	perform_write(0x6B, 0xAA);
-//	
-//	short y = perform_read(0x6B);
-//	
-//	if (y > threshold)
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // Red LED ON
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); // Blue LED OFF
-//	}
-//	
-//	else if (y < -threshold)
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // Blue LED ON
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); // Red LED OFF
-//	}
+short read_y()
+{
+	perform_write(0x6B, 0xAA);
+	short y = perform_read(0x6B);
 
-//}
+	return y;
+}
 
+short read_z()
+{
+	perform_write(0x6B, 0xAC);
+	short z = perform_read(0x6B);
+	
+	return z;
+}
+
+/*
+ *	Helper function for I2C operation. Sends the txdr_val to the slave_addr specified using I2C, 
+			notifiying the user via LED if any issues occured.
+*/ 
 void perform_write(int slave_addr, int txdr_val)
 {
 	// Setup I2C transmission
@@ -80,9 +68,9 @@ void perform_write(int slave_addr, int txdr_val)
 	I2C2->CR2 &= ~(1 << 10); // Set mode to WRITE
 	I2C2->CR2 |= (1 << 13); // Set START bit to true
 	
-	while (!(I2C2->ISR & (1 << 0)))
+	while (!(I2C2->ISR & (1 << 0))) // Wait for transmission reg to be ready.
 	{
-		if (I2C2->ISR & (1 << 4))
+		if (I2C2->ISR & (1 << 4)) // If NACK detected, set LED
 		{
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); // blue LED
 		}
@@ -100,7 +88,11 @@ void perform_write(int slave_addr, int txdr_val)
 	}	
 }
 
-
+/*
+ *	Helper function for I2C operation. Performs two read operations on the specified slave address using I2C, 
+			notifiying the user via LED if any issues occured. This function expects two read operations, so an address
+			on the L3GD20 gyro that will perform two reads, one for the low bits and one for the high bits.
+*/ 
 short perform_read(int slave_addr)
 {
 	I2C2->CR2 |= slave_addr << 1; // Set slave address
@@ -148,6 +140,11 @@ short perform_read(int slave_addr)
 }
 /* USER CODE END 0 */
 
+/*
+ *	Initilization function to establish I2C communication with L3GD20.
+ *	If an error occurs, the user will be notified through LEDs.
+ * 	This function must be called first, prior to any other gyroscope.c function, in order for each function to work properly.
+*/
 void i2c_init(void)
 {
 
@@ -166,15 +163,6 @@ void i2c_init(void)
 															GPIO_SPEED_FREQ_LOW,
 															GPIO_PULLUP};
 	
-//	GPIO_InitTypeDef initPullUp = {GPIO_PIN_11 | GPIO_PIN_13,
-//													  	GPIO_MODE_OUTPUT_PP,
-//															GPIO_SPEED_FREQ_LOW,
-//															GPIO_PULLUP};
-	
-	GPIO_InitTypeDef initOUT = {GPIO_PIN_14,
-													  	GPIO_MODE_OUTPUT_PP,
-															GPIO_SPEED_FREQ_LOW,
-															GPIO_NOPULL};
 	
 	GPIO_InitTypeDef initPC = {GPIO_PIN_0,
 													  	GPIO_MODE_OUTPUT_PP,
@@ -188,10 +176,8 @@ void i2c_init(void)
 
 
 	HAL_GPIO_Init(GPIOB, &initAF); // initialize AF pins
-	//HAL_GPIO_Init(GPIOB, &initOUT); // initialize output pins
 	HAL_GPIO_Init(GPIOC, &initPC); // initialize PC0
 	HAL_GPIO_Init(GPIOC, &initLED); // initialize LED pins
-	//HAL_GPIO_Init(GPIOB, &initPullUp); // initialize LED pins
 															
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
@@ -202,9 +188,8 @@ void i2c_init(void)
 	I2C2->TIMINGR &= 0x0F0000; // Bit mask to clear TIMINGR
 	I2C2->TIMINGR |= (0x13 << 0) | (0xF << 8) | (0x2 << 16) | (0x4 << 20); // Configure TIMINGR w/ fig. 5.4
 	I2C2->TIMINGR |= (1 << 28);
-							
-	
-	// CODE FOR GYROSCOPE READING, ACTIVITY 2
+				
+															
 	I2C2->CR1 |= (1 << 0); // Enable I2C2 	
 	// Setup I2C transmission
 	I2C2->CR2 |= 0x6B << 1; // Set slave address 
@@ -235,7 +220,8 @@ void i2c_init(void)
 
 	}
 	
-	I2C2->TXDR = 9; // Set control register to enable X, set to normal mode
+	//I2C2->TXDR = 9; // Set control register to enable X, set to normal mode
+	I2C2->TXDR = 12; // Set control register to enable Z, set to normal mode
 
 	while (!(I2C2->ISR & (1 << 6))) // TC status flag set, continue
 	{
@@ -249,22 +235,6 @@ void i2c_init(void)
 	I2C2->CR2 |= (1 << 14); // Set stop bit
 															
   /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  //while (1)
-  //{
-	//	read_x();
-	//	read_y();
-		
-	//	I2C2->CR2 |= (1 << 14); // Set stop bit
-	//	HAL_Delay(100);
- 
-
-  //}
-  /* USER CODE END 3 */
-	
-
 }
 
 /** System Clock Configuration
