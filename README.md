@@ -1,16 +1,22 @@
 # RCTable
 
+## PURPOSE: 
+
+A robot that can self-balance and can be remote controlled and even has some ability to detect obstacles and stop. This is a proof of concept because it requires a lot of motor control which has many applications in robotics. Motor control provides precision and fine movement in applications like robotic surgery. 
+
+![Link to Video Demonstration](https://youtu.be/PShnYRG8FYc)
+
 ## PHOTOS:
 ![pic1](https://github.com/u1154147/RCTable/blob/main/photos/img1.png)
 ![pic5](https://github.com/u1154147/RCTable/blob/main/photos/img5.png)
 ![pic9](https://github.com/u1154147/RCTable/blob/main/photos/img9.png)
 
+
+
 ## WIRING DIAGRAM:
 
 ![wiring](https://github.com/u1154147/RCTable/blob/main/DiagramsAndSchematics/Wiring%20Diagram.svg)
 
-## PURPOSE: 
-A robot that can self-balance and can be remote controlled and even has some ability to detect obstacles and stop. This is a proof of concept because it requires a lot of motor control which has many applications in robotics. Motor control provides precision and fine movement in applications like robotic surgery. 
 
 ## SETUP: 
 To setup a simple balancing robot, one will need:
