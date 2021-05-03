@@ -22,6 +22,12 @@ One will then need to develop code similar to ours to control motors using PID c
 
 Then, one needs to wire the proper chosen microcontroller pins to the motor drivers with the motor wires attached to the drivers. Power must be wired from the battery pack to the microcontroller and motor drivers by voltage dividers with chosen resistors. Motors must be mounted and attached to the bottom of the wooden or proto board frame. The USB host shield must be attached anywhere on the frame but near to the microcontroller and its wires. Sonic sensors must be mounted on the front or back or both on the frame in a steady spot to detect obstacles. Use double sided foam tape to mount breadboards, motor drivers, etc. Use jumper cables and breadboards to properly connect all microcontroller pins to various inputs and outputs. Upload code to microcontroller and enjoy!
 
+## MILESTONES:
+- [x] Discovery board can accurately control motors.
+- [x] Accurate gyroscope readings and motor feedback.
+- [ ] Bluetooth connected and can exert control over direction and driving.
+- [ ] Sonar for obstacle detection, robot can stop when obstacle detected and balance itself.  
+
 ## PROJECT NAME ORIGIN: 
 It is like a table and was going to be remote controlled. Ergo, RC (remote-controlled) Table.
 
