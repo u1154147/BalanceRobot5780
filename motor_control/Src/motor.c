@@ -1,9 +1,7 @@
-/* -------------------------------------------------------------------------------------------------------------
- *  Motor Control and Initialization Functions
- * -------------------------------------------------------------------------------------------------------------
+/* 
+ *  Performs motor control initilization and PI control. 
  */
 #include "motor.h"
-
 
 volatile int16_t error_integral = 0;    // Integrated error signal
 volatile uint8_t duty_cycle = 0;    	// Output PWM duty cycle
@@ -11,8 +9,8 @@ volatile int16_t target_rpm = 0;    	// Desired speed target
 volatile int16_t motor_speed = 0;   	// Measured motor speed
 volatile int8_t adc_value = 0;      	// ADC measured motor current
 volatile int16_t error = 0;         	// Speed error signal
-volatile uint8_t Kp = 4;            	// Proportional gain
-volatile uint8_t Ki = 20;            	// Integral gain
+volatile uint8_t Kp = 15;            	// Proportional gain
+volatile uint8_t Ki = 4;            	// Integral gain
 volatile char ccw = 0; 						// Spin direction, begins as cw so this begis false
 
 // Sets up the entire motor drive system
@@ -51,41 +49,23 @@ void pwm_init(void) {
     // Set output-compare CH1 to PWM1 mode and enable CCR1 preload buffer
     TIM14->CCMR1 |= (TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1PE);
     TIM14->CCER |= TIM_CCER_CC1E;           // Enable capture-compare channel 1
-    TIM14->PSC = 1;                         // Run timer on 24Mhz
-    TIM14->ARR = 1200;                      // PWM at 20kHz
+    TIM14->PSC = 1;                         // Run timer on 4Mhz
+    TIM14->ARR = 200;                      	// PWM at 20kHz
     TIM14->CCR1 = 0;                        // Start PWM at 0% duty cycle
     
     TIM14->CR1 |= TIM_CR1_CEN;              // Enable timer
 }
 
+// Changes the direction of the motors by inverting the input pins.
 void change_direction(void) {
-	if (ccw == 1)
+	if (ccw == 1) // Track direction of wheels
 		ccw = 0;
 			
 	else
 		ccw = 1;
-	
-	char a_pin = GPIOA->ODR ^ (1 << 5);
-	char c_pin = GPIOC->ODR ^ (1 << 4);
-	
-	GPIOA->ODR &= ~(1 << 5);
-  GPIOC->ODR &= ~(1 << 4);
-	
-	/*int i = 0;
-	while(i < 20000)
-	{	
-		error = 0;
-		error_integral = 5;
-		//motor_speed = (TIM3->CNT - 0x7FFF);
-    //TIM3->CNT = 0x7FFF; // Reset back to center point
-//		
-//		PI_update();
-		i++;
-	}
-	*/
-	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET); // red LED
-	GPIOA->ODR = a_pin;
-  GPIOC->ODR = c_pin;
+
+	GPIOA->ODR = GPIOA->ODR ^ (1 << 5); // Invert PA5
+  GPIOC->ODR = GPIOC->ODR ^ (1 << 4); // Invert PC4
 	
 }
 
@@ -93,7 +73,6 @@ void change_direction(void) {
 void pwm_setDutyCycle(uint8_t duty) {
     if(duty <= 100) {
         TIM14->CCR1 = ((uint32_t)duty*TIM14->ARR)/100;  // Use linear transform to produce CCR1 value
-        // (CCR1 == "pulse" parameter in PWM struct used by peripheral library)
     }
 }
 
@@ -118,8 +97,7 @@ void encoder_init(void) {
     TIM3->SMCR |= (TIM_SMCR_SMS_1 | TIM_SMCR_SMS_0);        // Capture encoder on both rising and falling edges
     TIM3->ARR = 0xFFFF;                                     // Set ARR to top of timer (longest possible period)
     TIM3->CNT = 0x7FFF;                                     // Bias at midpoint to allow for negative rotation
-    // (Could also cast unsigned register to signed number to get negative numbers if it rotates backwards past zero
-    //  just another option, the mid-bias is a bit simpler to understand though.)
+	
     TIM3->CR1 |= TIM_CR1_CEN;                               // Enable timer
 
     // Configure a second timer (TIM6) to fire an ISR on update event
@@ -146,7 +124,6 @@ void TIM6_DAC_IRQHandler(void) {
     motor_speed = (TIM3->CNT - 0x7FFF);
     TIM3->CNT = 0x7FFF; // Reset back to center point
     
-    // Call the PI update function
     PI_update();
 
     TIM6->SR &= ~TIM_SR_UIF;        // Acknowledge the interrupt
@@ -177,9 +154,6 @@ void PI_update(void) {
     
     /* Run PI control loop
      *
-     * Make sure to use the indicated variable names. This allows STMStudio to monitor
-     * the condition of the system!
-     *
      * target_rpm -> target motor speed in RPM
      * motor_speed -> raw motor speed in encoder counts
      * error -> error signal (difference between measured speed and target)
@@ -191,57 +165,27 @@ void PI_update(void) {
      * adc_value -> raw ADC counts to report current
      *
      */
-    
-    /// TODO: calculate error signal and write to "error" variable
-		if (motor_speed >= 0)
+		if (motor_speed >= 0) // Want to properly handle negative-measured RPM. 
 			error = (target_rpm * 2) - motor_speed;
 		
 		else
 			error = (target_rpm * 2) + motor_speed;
-    /* Hint: Remember that your calculated motor speed may not be directly in RPM!
-     *       You will need to convert the target or encoder speeds to the same units.
-     *       I recommend converting to whatever units result in larger values, gives
-     *       more resolution.
-     */
     
-    
-    /// TODO: Calculate integral portion of PI controller, write to "error_integral" variable
-    error_integral = error_integral + (Ki * error);
-    /// TODO: Clamp the value of the integral to a limited positive range
+		error_integral = error_integral + (Ki * error);
+		
+    // Clamp the value of the integral to a limited positive range
     if (error_integral < 0)
 				error_integral = 0;
-		
+	
+		// Clamp high end to prevent excess windup.
 		if (error_integral > 3200)
 				error_integral = 3200;
-    /* Hint: The value clamp is needed to prevent excessive "windup" in the integral.
-     *       You'll read more about this for the post-lab. The exact value is arbitrary
-     *       but affects the PI tuning.
-     *       Recommend that you clamp between 0 and 3200 (what is used in the lab solution)
-     */
-    
-    /// TODO: Calculate proportional portion, add integral and write to "output" variable
-    
-    int16_t output = (Kp * error) + error_integral; // Change this!
-    
-    /* Because the calculated values for the PI controller are significantly larger than 
-     * the allowable range for duty cycle, you'll need to divide the result down into 
-     * an appropriate range. (Maximum integral clamp / X = 100% duty cycle)
-     * 
-     * Hint: If you chose 3200 for the integral clamp you should divide by 32 (right shift by 5 bits), 
-     *       this will give you an output of 100 at maximum integral "windup".
-     *
-     * This division also turns the above calculations into pseudo fixed-point. This is because
-     * the lowest 5 bits act as if they were below the decimal point until the division where they
-     * were truncated off to result in an integer value. 
-     *
-     * Technically most of this is arbitrary, in a real system you would want to use a fixed-point
-     * math library. The main difference that these values make is the difference in the gain values
-     * required for tuning.
-     */
 
-     /// TODO: Divide the output into the proper range for output adjustment
+		int16_t output = (Kp * error) + error_integral;
+		
+     // Divide the output into the proper range for output adjustment
      output = output / 32;
-     /// TODO: Clamp the output value between 0 and 100 
+     // Clamp the output value between 0 and 100 
     if (output < 0)
 			output = 0;
 		if (output > 100)
