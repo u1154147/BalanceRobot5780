@@ -4,9 +4,9 @@ Program to handle BlueTooth connection with a PS3 controller. The controller con
 
 ## Pins Used
   - SPI 
-    - PC2: SCK - Clock for slave synchronization
-    - PC3: MISO - Master *INPUT* Slave *OUTPUT*
-    - PB10: MOSI - Master *OUTPUT* Slave *INPUT*
+    - PC2: MISO - Master *INPUT* Slave *OUTPUT*
+    - PC3: MOSI - Master *OUTPUT* Slave *INPUT*
+    - PA0: SCK - Clock for slave synchronization
   - USART 
     - PC1: TX - data to console.
     - PC11: RX - data from console.
