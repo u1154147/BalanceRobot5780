@@ -43,6 +43,12 @@ If you want to generate your own project using STM32CubeMX or another piece of s
 
 If you simply want to plug-and-play, install MDK-ARM V5 and unzip one of the [FULL_PROJECTS](https://github.com/u1154147/RCTable/tree/main/FULL_PROJECTS) zip files to have a fully operational project. 
 
+## EXTRA RESEARCH:
+
+Extra research was conducted in order to find out how to properly control motors to create a balancing robot, how to interface with and implement bluetooth communication, how to use SPI communication for our ultrasonic sensor, as well as how to use batteries to power to power the robot (without using wall outlet or usb cable). All were quite difficult and help explain why we were unable to accomplish 2 of our milestones. 
+
+
+
 ## MILESTONES:
 - [x] Discovery board can accurately control motors. [(Relevant files)](motor_control)
 - [x] Accurate gyroscope readings and motor feedback. [(Relevant files)](motor_control)
