@@ -1,5 +1,10 @@
 # RCTable
 
+## PHOTOS:
+![pic1](https://github.com/u1154147/RCTable/blob/main/photos/img1.png)
+![pic5](https://github.com/u1154147/RCTable/blob/main/photos/img5.png)
+![pic9](https://github.com/u1154147/RCTable/blob/main/photos/img9.png)
+
 ## PURPOSE: 
 A robot that can self-balance and can be remote controlled and even has some ability to detect obstacles and stop. This is a proof of concept because it requires a lot of motor control which has many applications in robotics. Motor control provides precision and fine movement in applications like robotic surgery. 
 
@@ -22,7 +27,7 @@ One will then need to develop code similar to ours to control motors using PID c
 
 Then, one needs to wire the proper chosen microcontroller pins to the motor drivers with the motor wires attached to the drivers. Power must be wired from the battery pack to the microcontroller and motor drivers by voltage dividers with chosen resistors. Motors must be mounted and attached to the bottom of the wooden or proto board frame. The USB host shield must be attached anywhere on the frame but near to the microcontroller and its wires. Sonic sensors must be mounted on the front or back or both on the frame in a steady spot to detect obstacles. Use double sided foam tape to mount breadboards, motor drivers, etc. Use jumper cables and breadboards to properly connect all microcontroller pins to various inputs and outputs. Upload code to microcontroller and enjoy!
 
-## CODE LAYOUT
+## CODE LAYOUT:
 
 If you want to generate your own project using STM32CubeMX or another piece of software used to upload code to the microcontroller, then simply place the Src and Inc code files into the 'Source' and 'Include' folders appropriate to your program's file directory. For example, wherever your ```main.c``` file is, you can place all the 'Src' files into here for one of the projects. 
 
