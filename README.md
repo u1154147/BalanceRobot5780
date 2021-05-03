@@ -1,6 +1,6 @@
 # RCTable
 
-PROJECT NAME: RCTable (its like a table and was going to be remote controlled)
+PROJECT NAME: RCTable (its like a table and was going to be remote controlled) by Greyson Mitra, Bhavani SampathKumar, and Zach Phelan
 
 PURPOSE: A robot that can self-balance and can be remote controlled and even has some ability to detect obstacles and stop. This is a proof of concept because it requires a lot of 
 motor control which has many applications in robotics. Motor control provides precision and fine movement in applications like robotic surgery. 
